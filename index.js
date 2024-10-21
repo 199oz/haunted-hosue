@@ -152,6 +152,10 @@ function init() {
     const chimneyMesh = new THREE.Mesh(
         new THREE.BoxGeometry(2, 4, 2),
         new THREE.MeshStandardMaterial({
+            map: floorNormalTexture,
+            aoMap: floorARMTexture,
+            roughnessMap: floorARMTexture,
+            metalnessMap: floorARMTexture
         })
     )
     chimneyMesh.position.set(4,6,-2)
@@ -166,13 +170,13 @@ function init() {
     scene.add(house);
 
 
-    const ambientLight = new THREE.AmbientLight('#86cdff', 0.275);
-    scene.add(ambientLight)
-    const directionalLight = new THREE.DirectionalLight('#86cdff', 1.5)
-    const rectAreaLight = new THREE.RectAreaLight('brown',40, 8, 4);
-    rectAreaLight.rotation.set( 0, 0, Math.PI * 0.5)
-    rectAreaLight.position.set(0, 0, 5.3)
-    // scene.add(rectAreaLight)
+    // *Lights
+    // const ambientLight = new THREE.AmbientLight('#86cdff', 0.175);
+    // scene.add(ambientLight)
+    const directionalLight = new THREE.DirectionalLight('#86cdff', 0.4)
+    const doorLight = new THREE.PointLight('#ff7d46', 20)
+    doorLight.position.set(0, 4.5, 6)
+    scene.add(doorLight)
 
     directionalLight.shadow.mapSize.width = 2048;  // Default is 512
     directionalLight.shadow.mapSize.height = 2048;
@@ -186,9 +190,9 @@ function init() {
     scene.add(directionalLight)
 
     // *Ghosts
-    const pointLight1 = new THREE.PointLight('red',8);
-    const pointLight2 = new THREE.PointLight('orange',8);
-    const pointLight3 = new THREE.PointLight('yellow',8);
+    const pointLight1 = new THREE.PointLight('#8800ff',8);
+    const pointLight2 = new THREE.PointLight('#ff0088',8);
+    const pointLight3 = new THREE.PointLight('#ff0000',8);
 
     scene.add(pointLight1)
     scene.add(pointLight2)
@@ -207,8 +211,8 @@ function init() {
 
 
     // *Fogs
-    // scene.fog = new THREE.Fog('#ff0000', 1, 13)
-    scene.fog = new THREE.FogExp2('#04343f', 0.1)
+    // scene.fog = new THREE.Fog('#ff0000', 0.001, 0.0020)
+    scene.fog = new THREE.FogExp2('#04343f', 0.07 )
 
     const graveyardGeometry = new THREE.BoxGeometry(1,3.5,2);
     const count = 20
@@ -238,20 +242,22 @@ function init() {
     }
 
     // *GUI
-    gui.add(floor.material, 'displacementScale').min(0).max(1).step(0.001).name('floorDisplacementScale')
+    gui.add(floor.material, 'displacementScale').min(0).max(2).step(0.001).name('floorDisplacementScale')
     gui.add(floor.material, 'displacementBias').min(-2).max(1).step(0.001).name('floorDisplacementBias')
     gui.add(doorMesh.material, 'displacementScale').min(0).max(1).step(0.001).name('doorDisplacementScale')
-    gui.add(doorMesh.material, 'displacementBias').min(-2).max(1).step(0.001).name('doorDisplacementBias')
+    gui.add(doorMesh.material, 'displacementBias').min(0).max(0.5).step(0.001).name('doorDisplacementBias')
 
 
     // *Helper
     const pointHelper = new THREE.PointLightHelper(pointLight1);
     const pointHelper2 = new THREE.PointLightHelper(pointLight2);
     const pointHelper3 = new THREE.PointLightHelper(pointLight3);
-    const directionalHelper = new THREE.DirectionalLightHelper(directionalLight);
-    const shadowHelper = new THREE.CameraHelper(directionalLight.shadow.camera);
-    const rectAreaLightHelper = new RectAreaLightHelper(rectAreaLight);
-    // rectAreaLight.add(rectAreaLightHelper)
+    // const directionalHelper = new THREE.DirectionalLightHelper(directionalLight,5);
+    // const shadowHelper = new THREE.CameraHelper(directionalLight.shadow.camera);
+    // const doorLightHelper = new THREE.PointLightHelper(doorLight);
+
+    // scene.add(doorLightHelper)
+
     // scene.add(shadowHelper)
     // scene.add(directionalHelper)
     // scene.add(pointHelper)
@@ -319,9 +325,33 @@ function init() {
         pointLight3.position.z = Math.sin(ghost3) * 17
         pointLight3.position.y = Math.sin(ghost3) * 3
 
+        // Update door light with scaled intensity
+
+    const frequency1 = 3
+    const frequency2 = 6
+    const frequency3 = 9
+    const frequency4 = 12
+
+    const phaseShift1 = 0 // Phase shift for each sine function (in radians)
+    const phaseShift2 = Math.PI / 3
+    const phaseShift3 = Math.PI / 2
+    const phaseShift4 = Math.PI
+
+    const flickerIntensity = 0.8 // Adjust the intensity scale to control brightness
 
 
+    doorLight.intensity = flickerIntensity * (
 
+        Math.abs(Math.sin(elapsedTime * frequency1 + phaseShift1)) +
+
+        Math.abs(Math.sin(elapsedTime * frequency2 + phaseShift2)) +
+
+        Math.abs(Math.sin(elapsedTime * frequency3 + phaseShift3)) +
+
+        Math.abs(Math.sin(elapsedTime * frequency4 + phaseShift4))
+
+    )
+        
 
         controls.update()
         renderer.render(scene, camera);
