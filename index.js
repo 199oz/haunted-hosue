@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import GUI  from "lil-gui";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { Sky } from 'three/addons/objects/Sky.js'
+import { RectAreaLightHelper } from 'three/addons/helpers/RectAreaLightHelper.js';
 
 
 function init() {
@@ -26,26 +27,34 @@ function init() {
     const wallARMTexture = textureLoader.load('/static/16-haunted-house-resources/wall/rock_wall_05_1k/textures/rock_wall_05_arm_1k.jpg');
     const wallNormalTexture = textureLoader.load('/static/16-haunted-house-resources/wall/rock_wall_05_1k/textures/rock_wall_05_nor_gl_1k.jpg');;
 
-    const roofColorTexture = textureLoader.load('/static/16-haunted-house-resources/wall/grey_roof_01_1k/textures/grey_roof_01_diff_1k.jpg');
-    const roofARMTexture = textureLoader.load('/static/16-haunted-house-resources/wall/grey_roof_01_1k/textures/grey_roof_01_arm_1k.jpg');
-    const roofNormalTexture = textureLoader.load('/static/16-haunted-house-resources/wall/grey_roof_01_1k/textures/grey_roof_01_nor_gl_1k.jpg');;
+    const roofColorTexture = textureLoader.load('/static/16-haunted-house-resources/wall/grey_roof_01_1k/textures/grey_roof_01_diff_1k.webp');
+    const roofARMTexture = textureLoader.load('/static/16-haunted-house-resources/wall/grey_roof_01_1k/textures/grey_roof_01_arm_1k.webp');
+    const roofNormalTexture = textureLoader.load('/static/16-haunted-house-resources/wall/grey_roof_01_1k/textures/grey_roof_01_nor_gl_1k.webp');;
 
-    const graveColorTexture = textureLoader.load('/static/16-haunted-house-resources/grave/plastered_stone_wall_1k/plastered_stone_wall_diff_1k.jpg');
-    const graveARMTexture = textureLoader.load('/static/16-haunted-house-resources/grave/plastered_stone_wall_1k/plastered_stone_wall_arm_1k.jpg');
-    const graveNormalTexture = textureLoader.load('/static/16-haunted-house-resources/grave/plastered_stone_wall_1k/plastered_stone_wall_nor_gl_1k.jpg');;
+    const graveColorTexture = textureLoader.load('/static/16-haunted-house-resources/grave/plastered_stone_wall_1k/plastered_stone_wall_diff_1k.webp');
+    const graveARMTexture = textureLoader.load('/static/16-haunted-house-resources/grave/plastered_stone_wall_1k/plastered_stone_wall_arm_1k.webp');
+    const graveNormalTexture = textureLoader.load('/static/16-haunted-house-resources/grave/plastered_stone_wall_1k/plastered_stone_wall_nor_gl_1k.webp');;
+
+    const doorColorTexture = textureLoader.load('/static/16-haunted-house-resources/door/color.webp');
+    const doorARMTexture = textureLoader.load('./static/16-haunted-house-resources/door/arm.webp');
+    const doorNormalTexture = textureLoader.load('./static/16-haunted-house-resources/door/normal.webp');
+    const doorRoughnessTexture = textureLoader.load('./static/16-haunted-house-resources/door/roughness.webp');
+    const doorMetalnessTexture = textureLoader.load('./static/16-haunted-house-resources/door/metalness.webp');
+    const doorDisplacementTexture = textureLoader.load('./static/16-haunted-house-resources/door/height.webp');
+    const doorEmissiveTexture = textureLoader.load('./static/16-haunted-house-resources/door/emissive.webp');
+    const doorAlphaTexture = textureLoader.load('./static/16-haunted-house-resources/door/alpha.webp');
+
+    doorColorTexture.colorSpace = THREE.SRGBColorSpace
+    doorEmissiveTexture.colorSpace = THREE.SRGBColorSpace
+    doorAlphaTexture.colorSpace = THREE.SRGBColorSpace
 
     graveColorTexture.colorSpace = THREE.SRGBColorSpace
 
     roofColorTexture.colorSpace = THREE.SRGBColorSpace
     wallColorTexture.colorSpace = THREE.SRGBColorSpace
-    wallARMTexture.colorSpace = THREE.SRGBColorSpace
-    wallNormalTexture.colorSpace = THREE.SRGBColorSpace
     graveColorTexture.repeat.set(0.3, 0.4)
-    graveARMTexture.repeat.set(0.3, 0.4)
-    graveNormalTexture.repeat.set(0.3, 0.4)
     roofColorTexture.repeat.set(3, 1)
     roofARMTexture.repeat.set(3, 1)
-    roofNormalTexture.repeat.set(3, 1)
 
     roofColorTexture.wrapS = THREE.RepeatWrapping
     roofARMTexture.wrapS = THREE.RepeatWrapping
@@ -77,8 +86,27 @@ function init() {
     const house = new THREE.Group()
     const grave = new THREE.Group()
     scene.add(grave)
-        
-        roofColorTexture.onLoad = () => console.log('Roof texture loaded');
+    
+    const doorMesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(4,6.4,200,200),
+        new THREE.MeshStandardMaterial({
+            map: doorColorTexture,
+            aoMap: doorARMTexture,
+            roughnessMap: doorRoughnessTexture,
+            metalnessMap: doorMetalnessTexture,
+            normalMap: doorNormalTexture,
+            displacementMap: doorDisplacementTexture,
+            displacementScale: 0.3,
+            displacementBias: 0,
+            metalness: 0.5,
+            roughness: 0.4,
+            
+        })
+    )
+    doorMesh.position.z = 5 + 0.01
+    doorMesh.position.y = 1
+
+    scene.add(doorMesh)
     
     const floor = new THREE.Mesh(
         new THREE.PlaneGeometry(40 , 40 , 200, 200),
@@ -141,6 +169,11 @@ function init() {
     const ambientLight = new THREE.AmbientLight('#86cdff', 0.275);
     scene.add(ambientLight)
     const directionalLight = new THREE.DirectionalLight('#86cdff', 1.5)
+    const rectAreaLight = new THREE.RectAreaLight('brown',40, 8, 4);
+    rectAreaLight.rotation.set( 0, 0, Math.PI * 0.5)
+    rectAreaLight.position.set(0, 0, 5.3)
+    // scene.add(rectAreaLight)
+
     directionalLight.shadow.mapSize.width = 2048;  // Default is 512
     directionalLight.shadow.mapSize.height = 2048;
     directionalLight.shadow.camera.left = -20;
@@ -153,9 +186,9 @@ function init() {
     scene.add(directionalLight)
 
     // *Ghosts
-    const pointLight1 = new THREE.PointLight('red',5);
-    const pointLight2 = new THREE.PointLight('orange',5);
-    const pointLight3 = new THREE.PointLight('yellow',5);
+    const pointLight1 = new THREE.PointLight('red',8);
+    const pointLight2 = new THREE.PointLight('orange',8);
+    const pointLight3 = new THREE.PointLight('yellow',8);
 
     scene.add(pointLight1)
     scene.add(pointLight2)
@@ -207,6 +240,8 @@ function init() {
     // *GUI
     gui.add(floor.material, 'displacementScale').min(0).max(1).step(0.001).name('floorDisplacementScale')
     gui.add(floor.material, 'displacementBias').min(-2).max(1).step(0.001).name('floorDisplacementBias')
+    gui.add(doorMesh.material, 'displacementScale').min(0).max(1).step(0.001).name('doorDisplacementScale')
+    gui.add(doorMesh.material, 'displacementBias').min(-2).max(1).step(0.001).name('doorDisplacementBias')
 
 
     // *Helper
@@ -215,6 +250,8 @@ function init() {
     const pointHelper3 = new THREE.PointLightHelper(pointLight3);
     const directionalHelper = new THREE.DirectionalLightHelper(directionalLight);
     const shadowHelper = new THREE.CameraHelper(directionalLight.shadow.camera);
+    const rectAreaLightHelper = new RectAreaLightHelper(rectAreaLight);
+    // rectAreaLight.add(rectAreaLightHelper)
     // scene.add(shadowHelper)
     // scene.add(directionalHelper)
     // scene.add(pointHelper)
